@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html ng-app="movieApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Movies (AngularJS)</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body ng-controller="MovieCtrl">
+    <h1>Add New Movies</h1>
+    <form ng-submit="submitMovie()">
+        <div class="form-group">
+            <label for="movie_name">Movie Name:</label>
+            <input type="text" class="form-control" id="movie_name" ng-model="movie.movie_name" required>
+        </div>
+        <div class="form-group">
+            <label for="cast">Cast (Comma separated):</label>
+            <input type="text" class="form-control" id="cast" ng-model="movie.cast" required>
+        </div>
+        <div class="form-group">
+            <div id="crew">
+                <label for="crew">Director:</label>
+                <input type="text" class="form-control" id="director" ng-model="movie.crew.director" required>
+                <label for="crew">Producer (comma separated):</label>
+                <input type="text" class="form-control" id="producer" ng-model="movie.crew.producer" required>
+            </div>
+            
+        </div>
+        <div class="form-group">
+            <label for="date_of_release">Date of Release (YYYY-MM-DD):</label>
+            <input type="date" class="form-control" id="date_of_release" ng-model="movie.date_of_release" required>
+        </div>
+        <div class="form-group">
+            <label for="languages">Languages (Comma separated):</label>
+            <input type="text" class="form-control" id="languages" ng-model="movie.languages" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <script>
+        angular.module('movieApp', [])
+          .controller('MovieCtrl', function ($scope, $http) {
+            $scope.movie = {
+                movie_name: "",
+                cast: [], // Initial empty string
+                crew: {},
+                date_of_release: "",
+                languages: [],
+            };
+ // Initialize empty object for movie data
+
+            $scope.submitMovie = function () {
+              // Convert comma-separated values to arrays
+                $scope.movie.movie_name = $scope.movie.movie_name;
+                $scope.movie.cast = $scope.movie.cast ? String($scope.movie.cast).split(",") : [];
+                $scope.movie.crew.director = $scope.movie.crew.director;
+                $scope.movie.crew.producer = String($scope.movie.crew.producer) ? String($scope.movie.crew.producer).split(",") : [];
+                $scope.movie.languages = $scope.movie.languages ? String($scope.movie.languages).split(",").map(lang => {
+                    return lang.trim();
+                }) : [];
+                console.log($scope.movie);
+              // Send POST request to /newMovies endpoint (replace with your actual endpoint)
+                $http.post('http://127.0.0.1:8000/newMovies', [$scope.movie])
+                .then(response => {
+                    alert(response.data.message);
+                    $scope.movie = {}; // Reset form after success
+                })
+                .catch(error => {
+                    console.error("Error submitting form:", error);
+                    alert("An error occurred while submitting the form. Please try again later.");
+                });
+            };
+          });
+    </script>
+</body>
+</html>
