@@ -43,3 +43,14 @@ async def add_movie(movie_data: Movies):
 async def add_movies(movie_data: list[Movies]):
     inserted_ids = await database.insert_many("Movie", movie_data)
     return {"inserted_ids": inserted_ids, "message" : "Movies inserted successfully!"}
+
+
+@app.get("/all/cities")
+async def get_cities():
+    cities = await database.find_cities()
+    return cities
+
+@app.get("/all/shows/{city}")
+async def get_shows_by_city(city):
+    shows_by_city = await database.find_shows_by_city(city)
+    return shows_by_city

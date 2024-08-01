@@ -2,6 +2,10 @@
 from pymongo import MongoClient
 from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi import HTTPException
+import asyncio
+from bson import json_util
+import json
+
 
 # Replace with your MongoDB connection string (environment variable recommended)
 MONGODB_URL = "mongodb+srv://ajiteshdasgupta04:5YK9NKIQfA65cMuy@cluster0.fnv7urt.mongodb.net/bookmymovie?retryWrites=true&w=majority&appName=Cluster0"
@@ -9,6 +13,8 @@ MONGODB_URL = "mongodb+srv://ajiteshdasgupta04:5YK9NKIQfA65cMuy@cluster0.fnv7urt
 
 class Database:
     client: AsyncIOMotorClient
+
+
 
     def __init__(self):
         self.client = AsyncIOMotorClient(MONGODB_URL)
@@ -30,6 +36,61 @@ class Database:
         """Finds a document by its id in a collection"""
         collection = await self.get_collection(collection_name)
         return await collection.find_one({"_id": document_id})
+    
+    async def find_cities(self):
+        """Finds only the city of the Cinema Hall"""
+        collection = await self.get_collection("Cinema_Hall")
+        pipeline = [
+            {"$project": {"city": "$hall_location.city"}},
+            {"$group": {"_id": "$city"}},
+            {"$project": {"city": "$_id"}},
+            {"$unwind": "$city"},
+        ]
+        cursor = collection.aggregate(pipeline)
+        result = await cursor.to_list(length=1000)  # Materialize the cursor
+        cities = [city["city"] for city in result]
+        return cities
+    
+
+    async def find_shows_by_city(self, city):
+        """Find Shows by City"""
+        collection = await self.get_collection("Shows")
+        pipeline = [
+            {
+                "$lookup": {
+                    "from": "Cinema_Hall",
+                    "localField": "cinema_hall_id",
+                    "foreignField": "_id",
+                    "as": "hall_details"
+                }
+            },
+            {
+                "$unwind": "$hall_details"
+            },
+            {
+                "$lookup": {
+                    "from": "Movie",
+                    "localField": "movie_id",
+                    "foreignField": "_id",
+                    "as": "movie_details"
+                }
+            },
+            {
+                "$unwind": "$movie_details"
+            },
+            {
+                "$match": {
+                    "hall_details.hall_location.city": city
+                }
+            },
+            {"$project": {"_id": 0}}
+
+        ]
+        cursor = collection.aggregate(pipeline)
+        result = await cursor.to_list(length=30)  # Materialize the cursor
+        result = json.loads(json_util.dumps(result))
+        return result
+        
 
     async def insert_one(self, collection_name, data):
         """Inserts a single document into a collection"""
