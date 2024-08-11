@@ -21,5 +21,18 @@ body {
     
     #shows {
         margin-top: 20px;
+        display: flex;
+        justify-content: space-around;
     }
     
+    .box {
+        height: auto;
+        width: 40%;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #000;
+        justify-content: space-around;
+        align-items: center;
+
+        
+    }

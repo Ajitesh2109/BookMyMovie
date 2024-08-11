@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Show Finder</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="src/moment.min.js"></script>
 </head>
 <body>
     <h1>Show Finder</h1>
@@ -15,9 +16,11 @@
         </select>
         <button onclick="fetchShows()">Find Shows</button>
     </div>
+   
     <div id="shows">
-        <!-- Shows will be displayed here -->
+         <!-- Shows will be displayed here -->
     </div>
+
     <script>
         window.onload = async function() {
         const citySelect = document.getElementById("city");
@@ -39,7 +42,6 @@
 
         async function fetchShows() {
             const city = document.getElementById("city").value;
-            console.log(city)
             const response = await fetch(`http://127.0.0.1:8000/all/shows/${city}`);
             const shows = await response.json();
             displayShows(shows);
@@ -55,13 +57,12 @@
             }
 
             shows.forEach(show => {
-                console.log(show)   
                 let showDiv = document.createElement("div");
-                showDiv.className = "show";
-                showDiv.innerHTML = `<h2>${show.movie_details.movie_name}</h2><p>${show.datetime}</p>`;
+                showDiv.className = "box";
+                showDiv.innerHTML = `<img src="${show.movie_details.poster}" height="70%" width="60%"/><h2>${show.movie_details.movie_name}</h2><p>${show.movie_details.cast}</p>`;
                 showsDiv.appendChild(showDiv);
             });
         }
-    </script>
+    </script>   
 </body>
 </html>
