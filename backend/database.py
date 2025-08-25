@@ -90,7 +90,9 @@ class Database:
         result = await cursor.to_list(length=30)  # Materialize the cursor
         result = json.loads(json_util.dumps(result))
         return result
-        
+    
+    async def find_shows_by_name(self, name):
+        '''Find Shows By Name'''
 
     async def insert_one(self, collection_name, data):
         """Inserts a single document into a collection"""

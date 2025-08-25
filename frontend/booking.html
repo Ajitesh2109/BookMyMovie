@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Booking</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Movie Booking</h1>
+    <div id="movie-details"></div>
+    <div id="booking-form">
+        </div>
+    <script>
+        window.onload = function() {
+            const selectedMovie = sessionStorage.getItem("selectedMovie");
+            fetchMovieDetails(selectedMovie);
+        }
+
+        async function fetchMovieDetails(movieName) {
+            const response = await fetch(`  `);
+            const movieDetails = await response.json();
+            displayMovieDetails(movieDetails);
+        }
+
+        function displayMovieDetails(movieDetails) {
+            const movieDetailsDiv = document.getElementById("movie-details");
+            movieDetailsDiv.innerHTML = `
+                <img src="${movieDetails.poster}" alt="${movieDetails.movie_name}">
+                <h2>${movieDetails.movie_name}</h2>
+                <p>${movieDetails.cast}</p>
+                `;
+        }
+    </script>
+</body>
+</html>

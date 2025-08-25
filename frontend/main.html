@@ -1,68 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Show Finder</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="src/moment.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Show Finder</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="src/moment.min.js"></script>
 </head>
 <body>
-    <h1>Show Finder</h1>
-    <div>
-        <label for="city">Select a city:</label>
-        <select id="city" name="city">
-            <!-- Cities will be populated here by JavaScript -->
-        </select>
-        <button onclick="fetchShows()">Find Shows</button>
+  <h1>Show Finder</h1>
+  <div>
+    <label for="city">Select a city:</label>
+    <select id="city" name="city">
+      </select>
+    <button onclick="fetchShows()">Find Shows</button>
+    <input type="text" id="showFilter" placeholder="Filter shows by name" onkeyup="filterShows()">
+  </div>
+
+  <div id="shows">
     </div>
-   
-    <div id="shows">
-         <!-- Shows will be displayed here -->
-    </div>
 
-    <script>
-        window.onload = async function() {
-        const citySelect = document.getElementById("city");
-        const cities = await fetchCities();
+  <script>
+    window.onload = async function() {
+      const citySelect = document.getElementById("city");
+      const cities = await fetchCities();
 
-        cities.forEach(city => {
-            let option = document.createElement("option");
-            option.value = city;
-            option.text = city;
-            citySelect.appendChild(option);
-        });
+      cities.forEach(city => {
+        let option = document.createElement("option");
+        option.value = city;
+        option.text = city;
+        citySelect.appendChild(option);
+      });
+    }
+
+    async function fetchCities() {
+      const response = await fetch("http://127.0.0.1:8000/all/cities");
+      const cities = await response.json();
+      return cities;
+    }
+
+    async function fetchShows() {
+      const city = document.getElementById("city").value;
+      const response = await fetch(`http://127.0.0.1:8000/all/shows/${city}`);
+      const shows = await response.json();
+      sessionStorage.setItem("shows", shows);
+      displayUniqueMoviesByCity(shows);
+    }
+
+    function displayUniqueMoviesByCity(shows) {
+      const showsDiv = document.getElementById("shows");
+      let movieNameArray = []
+      shows.forEach((show)=>{
+        let foundMovie = movieNameArray.find(movie => movie.movie_details.movie_name == show.movie_details.movie_name)
+        console.log("found", JSON.stringify(foundMovie) + "\n show" + show.movie_details.movie_name)
+        if (foundMovie?.movie_details.movie_name != show.movie_details.movie_name){
+          movieNameArray.push(show)
         }
+      })
+      showsDiv.innerHTML = "";
 
-        async function fetchCities() {
-            const response = await fetch("http://127.0.0.1:8000/all/cities");
-            const cities = await response.json();
-            return cities;
+      if (shows.length === 0) {
+        showsDiv.innerHTML = "<p>No shows available</p>";
+        return;
+      }
+
+      movieNameArray.forEach(show => {
+        let showDiv = document.createElement("div");
+        showDiv.className = "box";
+        showDiv.innerHTML = `<img src="${show.movie_details.poster}" height="400px" width="250px"/><h2>${show.movie_details.movie_name}</h2><p>${show.movie_details.cast}</p>`;
+        showDiv.onclick = () => {
+          alert(`You are booking ${show.movie_details.movie_name} movie`)
+          sessionStorage.setItem("selectedMovie", show.movie_details.movie_name)
+          console.log(window.location.pathname)
+          let path = window.location.pathname
+          let pathSplit = path.split("main.html")
+          window.location.href = pathSplit[0] + "booking.html"
+
         }
+        showsDiv.appendChild(showDiv);
+      });
+    }
 
-        async function fetchShows() {
-            const city = document.getElementById("city").value;
-            const response = await fetch(`http://127.0.0.1:8000/all/shows/${city}`);
-            const shows = await response.json();
-            displayShows(shows);
+    function filterShows() {
+      const filterInput = document.getElementById("showFilter");
+      const filterValue = filterInput.value.toUpperCase();
+      const showsDiv = document.getElementById("shows");
+      const showDivs = showsDiv.getElementsByClassName("box");
+      const re = new RegExp("^"+filterValue)
+      for (let i = 0; i < showDivs.length; i++) {
+        const showName = showDivs[i].querySelector("h2").textContent;
+        if (showName.toUpperCase().match(re)) {
+          showDivs[i].style.display = "";
+        } else {
+          showDivs[i].style.display = "none";
         }
-
-        function displayShows(shows) {
-            const showsDiv = document.getElementById("shows");
-            showsDiv.innerHTML = "";
-
-            if (shows.length === 0) {
-                showsDiv.innerHTML = "<p>No shows available</p>";
-                return;
-            }
-
-            shows.forEach(show => {
-                let showDiv = document.createElement("div");
-                showDiv.className = "box";
-                showDiv.innerHTML = `<img src="${show.movie_details.poster}" height="70%" width="60%"/><h2>${show.movie_details.movie_name}</h2><p>${show.movie_details.cast}</p>`;
-                showsDiv.appendChild(showDiv);
-            });
-        }
-    </script>   
+      }
+    }
+  </script>
 </body>
 </html>

@@ -54,3 +54,8 @@ async def get_cities():
 async def get_shows_by_city(city):
     shows_by_city = await database.find_shows_by_city(city)
     return shows_by_city
+
+@app.get("/all/shows/{show_name}")
+async def get_shows_by_name(name):
+    shows_by_name = await database.find_shows_by_name(name)
+    return shows_by_name
